@@ -22,6 +22,32 @@ scripts/    -- スクリプトJSON
 src/        -- Remotionソースコード
 ```
 
+## 環境変数の設定
+
+プロジェクトを使用する前に、`.env.example` を `.env` にコピーして環境変数を設定してください。
+
+```bash
+cp .env.example .env
+```
+
+### 必要な環境変数
+
+#### fishaudio（音声合成）
+
+| 変数名 | 必須 | 説明 |
+|:---|:---|:---|
+| `FISHAUDIO_API_KEY` | ✓ | APIキー（https://fish.audio/app/api-keys/ で取得） |
+| `FISHAUDIO_VOICE_ID` | ✓ | ボイスモデルID |
+| `FISHAUDIO_MODEL` | - | 使用モデル（デフォルト: s1） |
+
+#### HEYGEN（AIアバター）
+
+| 変数名 | 必須 | 説明 |
+|:---|:---|:---|
+| `HEYGEN_API_KEY` | ✓ | APIキー（HeyGen App → Space Settings → API tab） |
+| `HEYGEN_AVATAR_ID` | ✓ | アバターID |
+| `HEYGEN_VOICE_ID` | - | 音声ID（HEYGENの音声を使用する場合） |
+
 ## トリガーキーワード
 
 以下のキーワードで動画生成を開始します：
@@ -78,7 +104,6 @@ TikTok/YouTube Shorts向けの短尺動画を作成します。
 コマンド: `/audio-manage`
 
 ### テロップ担当
-
 テロップの生成とタイミング調整を行います。
 - 字幕テキストの生成
 - 表示タイミングの計算
@@ -119,35 +144,96 @@ BGMの選定と音量調整を行います。
 
 台本テキストからナレーション音声を生成します。
 
-```bash
-# 環境変数
-FISHAUDIO_API_KEY=your_api_key
+**API情報:**
 
-# 出力先
-audio/narration.mp3
+| 項目 | 値 |
+|:---|:---|
+| エンドポイント | `https://api.fish.audio/v1/tts` |
+| 認証方式 | Bearer Token |
+| 出力先 | `audio/` |
+
+**使用例:**
+
+```bash
+curl --request POST \
+  --url https://api.fish.audio/v1/tts \
+  --header "Authorization: Bearer $FISHAUDIO_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --header 'model: s1' \
+  --data "{
+    \"text\": \"こんにちは、今日はAIについて解説します。\",
+    \"reference_id\": \"$FISHAUDIO_VOICE_ID\",
+    \"format\": \"mp3\"
+  }" \
+  --output audio/narration.mp3
 ```
 
-使い方:
-1. [fishaudio](https://fish.audio/) でアカウント作成
-2. 台本テキストを入力して音声を生成
-3. 生成した音声を `audio/` に配置
+**ボイスIDの取得方法:**
+1. [fish.audio](https://fish.audio/) にアクセス
+2. 使用したいボイスを選択
+3. URLの `https://fish.audio/model/xxx-xxx-xxx` の `xxx-xxx-xxx` 部分がボイスID
 
 ### HEYGEN（AIアバター）
 
 AIアバターの動画を生成します。
 
-```bash
-# 環境変数
-HEYGEN_API_KEY=your_api_key
+**API情報:**
 
-# 出力先
-avatar/presenter.mp4
+| 項目 | 値 |
+|:---|:---|
+| ベースURL | `https://api.heygen.com` |
+| 認証方式 | X-Api-Key ヘッダー |
+| 出力先 | `avatar/` |
+
+**使用例:**
+
+```bash
+# 動画生成リクエスト
+curl --request POST \
+  --url https://api.heygen.com/v2/video/generate \
+  --header 'accept: application/json' \
+  --header 'content-type: application/json' \
+  --header "x-api-key: $HEYGEN_API_KEY" \
+  --data "{
+    \"video_inputs\": [{
+      \"character\": {
+        \"type\": \"avatar\",
+        \"avatar_id\": \"$HEYGEN_AVATAR_ID\"
+      },
+      \"voice\": {
+        \"type\": \"text\",
+        \"voice_id\": \"$HEYGEN_VOICE_ID\",
+        \"input_text\": \"こんにちは、今日はAIについて解説します。\"
+      }
+    }],
+    \"dimension\": {
+      \"width\": 1920,
+      \"height\": 1080
+    }
+  }"
+
+# 生成状況の確認
+curl --request GET \
+  --url "https://api.heygen.com/v1/video_status.get?video_id=VIDEO_ID" \
+  --header 'accept: application/json' \
+  --header "x-api-key: $HEYGEN_API_KEY"
 ```
 
-使い方:
-1. [HEYGEN](https://www.heygen.com/) でアカウント作成
-2. アバターと台本を設定して動画を生成
-3. 生成した動画を `avatar/` に配置
+**アバターID/音声IDの取得方法:**
+
+```bash
+# アバター一覧を取得
+curl --request GET \
+  --url https://api.heygen.com/v2/avatars \
+  --header 'accept: application/json' \
+  --header "x-api-key: $HEYGEN_API_KEY"
+
+# 音声一覧を取得
+curl --request GET \
+  --url https://api.heygen.com/v2/voices \
+  --header 'accept: application/json' \
+  --header "x-api-key: $HEYGEN_API_KEY"
+```
 
 ## コマンド
 
@@ -158,7 +244,6 @@ npx remotion studio
 ```
 
 ### レンダリング
-
 ```bash
 npx remotion render src/index.ts Main output/video.mp4
 ```
@@ -243,6 +328,7 @@ npx remotion render src/index.ts PresentationStyle output/presentation.mp4
 
 ## 修正の伝え方
 
+
 動画の調整は日本語で伝えてください：
 
 - 「テロップの文字をもっと大きくして」
@@ -265,7 +351,7 @@ npx remotion render src/index.ts PresentationStyle output/presentation.mp4
 ## 注意事項
 
 - 素材は事前に audio/, avatar/, bgm/, images/ に配置してください
-- fishaudio と HEYGEN の API キーは環境変数で設定してください
+- `.env` ファイルに API キーを設定してください（`.env.example` を参照）
 - レンダリング時間はPCスペックに依存します（目安: 5秒動画で約20秒）
 - 出力動画は output/ ディレクトリに保存されます
 - 音声ファイルは MP3 または WAV 形式

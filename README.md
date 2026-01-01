@@ -31,6 +31,7 @@ video-flow-template/
 │   └── utils/          -- ユーティリティ
 ├── .claude/            -- Claude Code設定
 │   └── commands/       -- サブエージェントコマンド
+├── .env.example        -- 環境変数テンプレート
 ├── CLAUDE.md           -- Claude Code用設定
 └── prompts/            -- プロンプトテンプレート
 ```
@@ -42,6 +43,62 @@ video-flow-template/
 | **fishaudio** | 合成音声（ナレーション） | `audio/` |
 | **HEYGEN** | AIアバター（人物映像） | `avatar/` |
 | **Remotion** | 動画編集・合成 | `output/` |
+
+## セットアップ
+
+### 1. 環境変数の設定
+
+```bash
+# .env.example を .env にコピー
+cp .env.example .env
+
+# .env を編集して各APIキーを設定
+```
+
+### 2. 必要なAPIキーの取得
+
+#### fishaudio（音声合成）
+
+| 変数名 | 説明 | 取得方法 |
+|:---|:---|:---|
+| `FISHAUDIO_API_KEY` | APIキー | [fish.audio/app/api-keys](https://fish.audio/app/api-keys/) で生成 |
+| `FISHAUDIO_VOICE_ID` | ボイスモデルID | [fish.audio](https://fish.audio/) でボイスを選択し、URLからIDを取得 |
+| `FISHAUDIO_MODEL` | 使用モデル | `s1`（推奨）、`speech-1.6`、`speech-1.5` |
+
+**ボイスIDの取得方法:**
+1. [fish.audio](https://fish.audio/) にアクセス
+2. 使用したいボイスを選択
+3. URLの `https://fish.audio/model/xxx-xxx-xxx` の `xxx-xxx-xxx` 部分がボイスID
+
+#### HEYGEN（AIアバター）
+
+| 変数名 | 説明 | 取得方法 |
+|:---|:---|:---|
+| `HEYGEN_API_KEY` | APIキー | HeyGen App → Space Settings → API tab |
+| `HEYGEN_AVATAR_ID` | アバターID | API経由またはHeyGen Appで確認 |
+| `HEYGEN_VOICE_ID` | 音声ID（オプション） | API経由で取得 |
+
+**アバターID/音声IDの取得方法:**
+
+```bash
+# アバター一覧を取得
+curl --request GET \
+  --url https://api.heygen.com/v2/avatars \
+  --header 'accept: application/json' \
+  --header 'x-api-key: YOUR_API_KEY'
+
+# 音声一覧を取得
+curl --request GET \
+  --url https://api.heygen.com/v2/voices \
+  --header 'accept: application/json' \
+  --header 'x-api-key: YOUR_API_KEY'
+```
+
+### 3. 依存関係のインストール
+
+```bash
+npm install
+```
 
 ## クイックスタート
 
@@ -82,7 +139,6 @@ YouTube風に編集して
 ```
 
 ### 4. 完成動画を確認
-
 ```bash
 ls output/
 # output.mp4
@@ -110,13 +166,52 @@ ls output/
 | 映像担当 | アバターや画像の配置 |
 | BGM担当 | BGMの選定と音量調整 |
 
-## 開発
+## API使用例
 
-### 依存関係のインストール
+### fishaudio で音声生成
 
 ```bash
-npm install
+curl --request POST \
+  --url https://api.fish.audio/v1/tts \
+  --header 'Authorization: Bearer YOUR_API_KEY' \
+  --header 'Content-Type: application/json' \
+  --header 'model: s1' \
+  --data '{
+    "text": "こんにちは、今日はAIについて解説します。",
+    "reference_id": "YOUR_VOICE_ID",
+    "format": "mp3"
+  }' \
+  --output audio/narration.mp3
 ```
+
+### HEYGEN でアバター動画生成
+
+```bash
+curl --request POST \
+  --url https://api.heygen.com/v2/video/generate \
+  --header 'accept: application/json' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: YOUR_API_KEY' \
+  --data '{
+    "video_inputs": [{
+      "character": {
+        "type": "avatar",
+        "avatar_id": "YOUR_AVATAR_ID"
+      },
+      "voice": {
+        "type": "text",
+        "voice_id": "YOUR_VOICE_ID",
+        "input_text": "こんにちは、今日はAIについて解説します。"
+      }
+    }],
+    "dimension": {
+      "width": 1920,
+      "height": 1080
+    }
+  }'
+```
+
+## 開発
 
 ### プレビュー
 
@@ -129,20 +224,6 @@ npx remotion studio
 ```bash
 npx remotion render src/index.ts Main out/output.mp4
 ```
-
-## 外部サービスの設定
-
-### fishaudio
-
-1. [fishaudio](https://fish.audio/)でアカウント作成
-2. APIキーを取得
-3. 環境変数に設定: `FISHAUDIO_API_KEY`
-
-### HEYGEN
-
-1. [HEYGEN](https://www.heygen.com/)でアカウント作成
-2. APIキーを取得
-3. 環境変数に設定: `HEYGEN_API_KEY`
 
 ## テンプレート
 
@@ -165,6 +246,7 @@ npx remotion render src/index.ts Main out/output.mp4
 - ヘッダー付き
 
 ## スクリプトJSON形式
+
 
 ```json
 {
