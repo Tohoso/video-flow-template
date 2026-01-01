@@ -1,0 +1,96 @@
+name: 🎬 Video Request
+description: Request automatic video generation
+title: "[Video] "
+labels: ["video-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 動画生成リクエスト
+        以下のフォームに記入して、動画を自動生成します。
+        
+        **注意:** `video-request` ラベルが付与されると、自動的に動画生成が開始されます。
+
+  - type: input
+    id: title
+    attributes:
+      label: 動画タイトル
+      description: 動画のタイトルを入力してください
+      placeholder: "例: AI技術の最新トレンド解説"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: template
+    attributes:
+      label: テンプレート
+      description: 使用する動画テンプレートを選択してください
+      options:
+        - YouTube風 (16:9)
+        - ショート動画風 (9:16)
+        - プレゼンテーション風 (16:9)
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: script
+    attributes:
+      label: 台本・内容
+      description: |
+        動画の内容を記述してください。
+        シーンごとに分けて書くと、より正確に動画が生成されます。
+      placeholder: |
+        ## シーン1: オープニング
+        こんにちは、今日はAI技術の最新トレンドについて解説します。
+        
+        ## シーン2: 本編
+        まず最初に、生成AIの進化について見ていきましょう。
+        
+        ## シーン3: エンディング
+        ご視聴ありがとうございました。
+    validations:
+      required: true
+
+  - type: textarea
+    id: visual
+    attributes:
+      label: ビジュアル指示（任意）
+      description: 各シーンで使用する画像や映像の指示があれば記入してください
+      placeholder: |
+        - シーン1: ロゴを表示
+        - シーン2: グラフや図表を表示
+        - シーン3: エンドカードを表示
+
+  - type: dropdown
+    id: duration
+    attributes:
+      label: 目標時間
+      description: 動画の目標時間を選択してください
+      options:
+        - 30秒以内
+        - 1分程度
+        - 3分程度
+        - 5分程度
+        - 10分以上
+      default: 1
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: options
+    attributes:
+      label: オプション
+      options:
+        - label: BGMを追加する
+        - label: テロップを自動生成する
+          required: true
+        - label: トランジションを追加する
+          required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: その他の要望
+      description: その他の要望があれば記入してください
+      placeholder: "例: 明るい雰囲気で、ビジネス向けのトーンで"

@@ -1,0 +1,113 @@
+name: Render Video (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      script_file:
+        description: 'Path to script JSON file (e.g., scripts/input/example.json)'
+        required: false
+        default: ''
+      template:
+        description: 'Video template to use'
+        required: true
+        type: choice
+        options:
+          - Main
+          - YouTubeStyle
+          - ShortStyle
+          - PresentationStyle
+        default: 'Main'
+      output_name:
+        description: 'Output file name (without extension)'
+        required: false
+        default: 'video'
+      quality:
+        description: 'Video quality (0-100)'
+        required: false
+        default: '80'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libcups2 \
+            libdrm2 \
+            libxkbcommon0 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libgbm1 \
+            libasound2
+
+      - name: Render Video
+        run: |
+          SCRIPT_FILE="${{ github.event.inputs.script_file }}"
+          TEMPLATE="${{ github.event.inputs.template }}"
+          OUTPUT_NAME="${{ github.event.inputs.output_name }}"
+          QUALITY="${{ github.event.inputs.quality }}"
+          
+          # 出力ディレクトリ作成
+          mkdir -p output
+          
+          # レンダリングコマンド構築
+          RENDER_CMD="npx remotion render src/index.ts $TEMPLATE output/${OUTPUT_NAME}.mp4 --codec=h264 --quality=$QUALITY --log-level=info"
+          
+          # スクリプトファイルが指定されている場合
+          if [ -n "$SCRIPT_FILE" ] && [ -f "$SCRIPT_FILE" ]; then
+            echo "Using script file: $SCRIPT_FILE"
+            RENDER_CMD="$RENDER_CMD --props=\"$(cat $SCRIPT_FILE)\""
+          fi
+          
+          # レンダリング実行
+          eval $RENDER_CMD
+
+      - name: Upload Video Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.inputs.output_name }}-${{ github.run_number }}
+          path: output/${{ github.event.inputs.output_name }}.mp4
+          retention-days: 30
+
+      - name: Summary
+        run: |
+          echo "## 🎬 Video Rendered Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Template | ${{ github.event.inputs.template }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Output | ${{ github.event.inputs.output_name }}.mp4 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Quality | ${{ github.event.inputs.quality }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download the video from the Artifacts section below." >> $GITHUB_STEP_SUMMARY

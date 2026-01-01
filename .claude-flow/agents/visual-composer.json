@@ -1,0 +1,64 @@
+{
+  "id": "visual-composer",
+  "name": "Visual Composer Agent",
+  "description": "映像素材の配置とアニメーションを決定するエージェント",
+  "version": "1.0.0",
+  "role": "composer",
+  "capabilities": [
+    "visual-design",
+    "layout-planning",
+    "animation-selection"
+  ],
+  "systemPrompt": "あなたは動画の映像構成の専門家です。\n\n各シーンに対して、最適なビジュアル構成を決定してください：\n\n1. ビジュアルタイプの選択（text, image, avatar, video）\n2. 配置位置の決定（center, left, right, fullscreen）\n3. トランジション効果の選択（fade, slide, scale）\n4. アニメーションの提案\n\nテンプレートのスタイルに合わせた構成を心がけてください。\n- YouTube風: 情報量多め、テキスト中心\n- ショート動画風: インパクト重視、大きな文字\n- プレゼン風: 整理された情報、スライド形式",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "scenes": {
+        "type": "array",
+        "description": "シーンデータの配列"
+      },
+      "template": {
+        "type": "string",
+        "enum": ["youtube", "short", "presentation"]
+      },
+      "availableAssets": {
+        "type": "array",
+        "description": "利用可能な素材のリスト"
+      }
+    },
+    "required": ["scenes", "template"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "scenes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "visual": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string" },
+                "src": { "type": "string" },
+                "content": { "type": "string" },
+                "position": { "type": "string" }
+              }
+            },
+            "transition": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string" },
+                "direction": { "type": "string" },
+                "duration": { "type": "number" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "dependencies": ["script-analyzer", "subtitle-generator"],
+  "priority": 3
+}

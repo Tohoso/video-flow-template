@@ -1,0 +1,210 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Video Script Schema",
+  "description": "Remotion動画生成用のスクリプトJSONスキーマ",
+  "type": "object",
+  "required": ["meta", "scenes"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "description": "動画のメタデータ",
+      "required": ["title", "template"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "動画のタイトル"
+        },
+        "description": {
+          "type": "string",
+          "description": "動画の説明"
+        },
+        "template": {
+          "type": "string",
+          "enum": ["youtube", "short", "presentation"],
+          "description": "使用するテンプレート"
+        },
+        "fps": {
+          "type": "number",
+          "default": 30,
+          "description": "フレームレート"
+        },
+        "width": {
+          "type": "number",
+          "description": "動画の幅（ピクセル）"
+        },
+        "height": {
+          "type": "number",
+          "description": "動画の高さ（ピクセル）"
+        },
+        "author": {
+          "type": "string",
+          "description": "作成者"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "タグ"
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "description": "シーンの配列",
+      "items": {
+        "type": "object",
+        "required": ["id", "duration"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "シーンの一意識別子"
+          },
+          "duration": {
+            "type": "number",
+            "minimum": 0.5,
+            "maximum": 300,
+            "description": "シーンの長さ（秒）"
+          },
+          "narration": {
+            "type": "string",
+            "description": "ナレーションテキスト"
+          },
+          "subtitle": {
+            "type": "string",
+            "description": "テロップテキスト"
+          },
+          "visual": {
+            "type": "object",
+            "description": "ビジュアル設定",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["text", "image", "video", "avatar", "code", "chart"],
+                "description": "ビジュアルタイプ"
+              },
+              "src": {
+                "type": "string",
+                "description": "画像/動画のソースパスまたはURL"
+              },
+              "content": {
+                "type": "string",
+                "description": "テキストコンテンツ"
+              },
+              "position": {
+                "type": "string",
+                "enum": ["center", "left", "right", "top", "bottom", "fullscreen"],
+                "default": "center",
+                "description": "配置位置"
+              },
+              "animation": {
+                "type": "string",
+                "enum": ["none", "fadeIn", "slideIn", "scaleIn", "typewriter"],
+                "default": "fadeIn",
+                "description": "アニメーション"
+              }
+            }
+          },
+          "transition": {
+            "type": "object",
+            "description": "トランジション設定",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["none", "fade", "slide", "scale", "wipe"],
+                "default": "fade",
+                "description": "トランジションタイプ"
+              },
+              "direction": {
+                "type": "string",
+                "enum": ["left", "right", "up", "down"],
+                "default": "up",
+                "description": "トランジション方向"
+              },
+              "duration": {
+                "type": "number",
+                "default": 0.5,
+                "description": "トランジション時間（秒）"
+              }
+            }
+          },
+          "audio": {
+            "type": "object",
+            "description": "音声設定",
+            "properties": {
+              "bgm": {
+                "type": "string",
+                "description": "BGMファイルパスまたはURL"
+              },
+              "bgmVolume": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "default": 0.3,
+                "description": "BGMボリューム"
+              },
+              "narration": {
+                "type": "string",
+                "description": "ナレーション音声ファイル"
+              },
+              "narrationVolume": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "default": 1,
+                "description": "ナレーションボリューム"
+              },
+              "sfx": {
+                "type": "string",
+                "description": "効果音ファイル"
+              }
+            }
+          },
+          "background": {
+            "type": "object",
+            "description": "背景設定",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["solid", "gradient", "image", "video"],
+                "default": "gradient"
+              },
+              "color": {
+                "type": "string",
+                "description": "背景色（solid時）"
+              },
+              "gradient": {
+                "type": "string",
+                "description": "グラデーション（gradient時）"
+              },
+              "src": {
+                "type": "string",
+                "description": "背景画像/動画のソース"
+              }
+            }
+          }
+        }
+      }
+    },
+    "globalSettings": {
+      "type": "object",
+      "description": "グローバル設定",
+      "properties": {
+        "bgm": {
+          "type": "object",
+          "properties": {
+            "file": { "type": "string" },
+            "volume": { "type": "number" },
+            "loop": { "type": "boolean" }
+          }
+        },
+        "watermark": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "text": { "type": "string" },
+            "position": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

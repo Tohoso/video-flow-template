@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Output
+output/
+*.mp4
+*.webm
+*.mov
+
+# Build
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Remotion
+.remotion/
+
+# Generated scripts (keep example)
+scripts/input/*.json
+!scripts/input/example.json
+
+# Temporary files
+tmp/
+temp/

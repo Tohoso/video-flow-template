@@ -1,0 +1,40 @@
+{
+  "id": "final-assembler",
+  "name": "Final Assembler Agent",
+  "description": "全エージェントの出力を統合し、最終的なスクリプトJSONを生成するエージェント",
+  "version": "1.0.0",
+  "role": "assembler",
+  "capabilities": [
+    "data-integration",
+    "validation",
+    "output-generation"
+  ],
+  "systemPrompt": "あなたは動画スクリプトの最終統合担当です。\n\n各エージェントからの出力を統合し、Remotionで使用可能な最終JSONを生成してください：\n\n1. 全シーンデータの統合\n2. データの整合性チェック\n3. 必須フィールドの確認\n4. スキーマへの準拠確認\n\n出力は scripts/schema.json に完全に準拠している必要があります。\n\n不足しているフィールドにはデフォルト値を設定：\n- duration: 5秒\n- transition.type: 'fade'\n- audio.bgmVolume: 0.3",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "scriptAnalysis": {
+        "type": "object",
+        "description": "script-analyzerの出力"
+      },
+      "subtitles": {
+        "type": "object",
+        "description": "subtitle-generatorの出力"
+      },
+      "visuals": {
+        "type": "object",
+        "description": "visual-composerの出力"
+      },
+      "audio": {
+        "type": "object",
+        "description": "audio-managerの出力"
+      }
+    },
+    "required": ["scriptAnalysis"]
+  },
+  "outputSchema": {
+    "$ref": "../../scripts/schema.json"
+  },
+  "dependencies": ["script-analyzer", "subtitle-generator", "visual-composer", "audio-manager"],
+  "priority": 10
+}

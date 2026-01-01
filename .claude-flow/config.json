@@ -1,0 +1,40 @@
+{
+  "$schema": "https://claude-flow.dev/schema/config.json",
+  "version": "1.0.0",
+  "project": {
+    "name": "video-flow-template",
+    "description": "AI-powered video generation using Remotion",
+    "type": "video-generation"
+  },
+  "swarm": {
+    "defaultStrategy": "sequential",
+    "maxConcurrency": 4,
+    "timeout": 300000,
+    "retryAttempts": 2
+  },
+  "agents": {
+    "directory": ".claude-flow/agents",
+    "autoLoad": true
+  },
+  "memory": {
+    "enabled": true,
+    "persistence": "session",
+    "maxSize": "100MB"
+  },
+  "output": {
+    "format": "json",
+    "directory": "scripts/input",
+    "filename": "generated.json"
+  },
+  "integrations": {
+    "github": {
+      "enabled": true,
+      "autoCommit": false,
+      "createPR": false
+    }
+  },
+  "logging": {
+    "level": "info",
+    "format": "json"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "id": "subtitle-generator",
+  "name": "Subtitle Generator Agent",
+  "description": "テロップのテキストとタイミングを生成するエージェント",
+  "version": "1.0.0",
+  "role": "generator",
+  "capabilities": [
+    "text-processing",
+    "timing-calculation",
+    "subtitle-formatting"
+  ],
+  "systemPrompt": "あなたは動画テロップの専門家です。\n\n与えられたナレーションテキストから、視聴者が読みやすいテロップを生成してください：\n\n1. 長いテキストは適切な長さに分割\n2. 1行あたり最大20文字程度\n3. 重要なキーワードを強調\n4. 読みやすいタイミングで表示\n\n日本語の場合は句読点で区切り、英語の場合は文節で区切ってください。",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "scenes": {
+        "type": "array",
+        "description": "シーンデータの配列"
+      },
+      "style": {
+        "type": "string",
+        "enum": ["youtube", "short", "presentation"],
+        "description": "テロップスタイル"
+      }
+    },
+    "required": ["scenes"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "scenes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "subtitle": { "type": "string" },
+            "subtitleSegments": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "text": { "type": "string" },
+                  "startTime": { "type": "number" },
+                  "endTime": { "type": "number" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "dependencies": ["script-analyzer"],
+  "priority": 2
+}

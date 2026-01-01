@@ -1,0 +1,88 @@
+{
+  "id": "video-generation",
+  "name": "Video Generation Workflow",
+  "description": "台本から動画スクリプトJSONを生成するワークフロー",
+  "version": "1.0.0",
+  "trigger": {
+    "type": "manual",
+    "input": {
+      "rawText": "string",
+      "template": "youtube|short|presentation",
+      "targetDuration": "number",
+      "mood": "string"
+    }
+  },
+  "stages": [
+    {
+      "id": "analyze",
+      "name": "Script Analysis",
+      "agent": "script-analyzer",
+      "input": {
+        "rawText": "{{trigger.rawText}}",
+        "targetDuration": "{{trigger.targetDuration}}",
+        "template": "{{trigger.template}}"
+      },
+      "output": "scriptAnalysis"
+    },
+    {
+      "id": "parallel-processing",
+      "name": "Parallel Content Generation",
+      "type": "parallel",
+      "stages": [
+        {
+          "id": "subtitles",
+          "name": "Generate Subtitles",
+          "agent": "subtitle-generator",
+          "input": {
+            "scenes": "{{scriptAnalysis.scenes}}",
+            "style": "{{trigger.template}}"
+          },
+          "output": "subtitles"
+        },
+        {
+          "id": "audio",
+          "name": "Configure Audio",
+          "agent": "audio-manager",
+          "input": {
+            "scenes": "{{scriptAnalysis.scenes}}",
+            "mood": "{{trigger.mood}}"
+          },
+          "output": "audio"
+        }
+      ]
+    },
+    {
+      "id": "visuals",
+      "name": "Compose Visuals",
+      "agent": "visual-composer",
+      "input": {
+        "scenes": "{{scriptAnalysis.scenes}}",
+        "template": "{{trigger.template}}"
+      },
+      "output": "visuals",
+      "dependsOn": ["analyze"]
+    },
+    {
+      "id": "assemble",
+      "name": "Final Assembly",
+      "agent": "final-assembler",
+      "input": {
+        "scriptAnalysis": "{{scriptAnalysis}}",
+        "subtitles": "{{subtitles}}",
+        "visuals": "{{visuals}}",
+        "audio": "{{audio}}"
+      },
+      "output": "finalScript",
+      "dependsOn": ["parallel-processing", "visuals"]
+    }
+  ],
+  "output": {
+    "file": "scripts/input/generated.json",
+    "data": "{{finalScript}}"
+  },
+  "errorHandling": {
+    "onAgentFailure": "retry",
+    "maxRetries": 2,
+    "fallbackToDefaults": true
+  }
+}

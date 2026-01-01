@@ -1,0 +1,61 @@
+{
+  "id": "script-analyzer",
+  "name": "Script Analyzer Agent",
+  "description": "台本テキストを解析し、シーン構成を決定するエージェント",
+  "version": "1.0.0",
+  "role": "analyzer",
+  "capabilities": [
+    "text-analysis",
+    "scene-detection",
+    "timing-estimation"
+  ],
+  "systemPrompt": "あなたは動画制作のための台本分析の専門家です。\n\n与えられたテキストを分析し、以下の形式でシーン構成を出力してください：\n\n1. 各シーンの識別（自然な区切りを見つける）\n2. 各シーンの推定時間（テキスト量と内容から判断）\n3. 各シーンのナレーションテキスト\n4. 各シーンに適したビジュアルタイプの提案\n\n出力は必ず有効なJSONで、scripts/schema.jsonに準拠してください。",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "rawText": {
+        "type": "string",
+        "description": "分析する台本テキスト"
+      },
+      "targetDuration": {
+        "type": "number",
+        "description": "目標動画時間（秒）"
+      },
+      "template": {
+        "type": "string",
+        "enum": ["youtube", "short", "presentation"],
+        "description": "使用するテンプレート"
+      }
+    },
+    "required": ["rawText"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "meta": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "template": { "type": "string" },
+          "fps": { "type": "number" },
+          "width": { "type": "number" },
+          "height": { "type": "number" }
+        }
+      },
+      "scenes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "duration": { "type": "number" },
+            "narration": { "type": "string" },
+            "visualType": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "dependencies": [],
+  "priority": 1
+}

@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "title": "AI技術の最新トレンド",
+    "description": "2024年のAI技術トレンドを解説する動画",
+    "template": "youtube",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "author": "Video Flow Template",
+    "tags": ["AI", "技術", "トレンド"]
+  },
+  "scenes": [
+    {
+      "id": "opening",
+      "duration": 5,
+      "narration": "こんにちは、今日はAI技術の最新トレンドについて解説します。",
+      "subtitle": "AI技術の最新トレンド",
+      "visual": {
+        "type": "text",
+        "content": "AI技術の\n最新トレンド",
+        "position": "center",
+        "animation": "scaleIn"
+      },
+      "transition": {
+        "type": "fade",
+        "duration": 0.5
+      }
+    },
+    {
+      "id": "topic-1",
+      "duration": 8,
+      "narration": "まず最初に、生成AIの進化について見ていきましょう。ChatGPTやClaudeなどの大規模言語モデルは、日々進化を続けています。",
+      "subtitle": "生成AIの進化",
+      "visual": {
+        "type": "text",
+        "content": "1. 生成AIの進化\n\n• 大規模言語モデル\n• マルチモーダル対応\n• エージェント機能",
+        "position": "center",
+        "animation": "slideIn"
+      },
+      "transition": {
+        "type": "slide",
+        "direction": "left",
+        "duration": 0.5
+      }
+    },
+    {
+      "id": "topic-2",
+      "duration": 8,
+      "narration": "次に、AIエージェントの台頭です。単なる質問応答から、タスクを自律的に実行するエージェントへと進化しています。",
+      "subtitle": "AIエージェントの台頭",
+      "visual": {
+        "type": "text",
+        "content": "2. AIエージェント\n\n• 自律的なタスク実行\n• ツール連携\n• マルチエージェント協調",
+        "position": "center",
+        "animation": "slideIn"
+      },
+      "transition": {
+        "type": "slide",
+        "direction": "left",
+        "duration": 0.5
+      }
+    },
+    {
+      "id": "topic-3",
+      "duration": 8,
+      "narration": "そして、コード生成AIの発展も見逃せません。GitHub CopilotやClaude Codeなど、開発者の生産性を大幅に向上させています。",
+      "subtitle": "コード生成AIの発展",
+      "visual": {
+        "type": "text",
+        "content": "3. コード生成AI\n\n• GitHub Copilot\n• Claude Code\n• 自動テスト生成",
+        "position": "center",
+        "animation": "slideIn"
+      },
+      "transition": {
+        "type": "slide",
+        "direction": "left",
+        "duration": 0.5
+      }
+    },
+    {
+      "id": "closing",
+      "duration": 5,
+      "narration": "以上、AI技術の最新トレンドをお届けしました。ご視聴ありがとうございました。",
+      "subtitle": "ご視聴ありがとうございました",
+      "visual": {
+        "type": "text",
+        "content": "Thank You\nfor Watching",
+        "position": "center",
+        "animation": "fadeIn"
+      },
+      "transition": {
+        "type": "fade",
+        "duration": 1
+      }
+    }
+  ],
+  "globalSettings": {
+    "watermark": {
+      "enabled": false
+    }
+  }
+}

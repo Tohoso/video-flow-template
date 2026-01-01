@@ -1,0 +1,100 @@
+name: Preview Video
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'scripts/input/**'
+      - 'public/**'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libcups2 \
+            libdrm2 \
+            libxkbcommon0 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libgbm1 \
+            libasound2
+
+      - name: Generate Preview (First 5 seconds)
+        run: |
+          mkdir -p output
+          
+          # 最初の5秒だけレンダリング（プレビュー用）
+          npx remotion render src/index.ts Main output/preview.mp4 \
+            --codec=h264 \
+            --quality=60 \
+            --frames=0-150 \
+            --log-level=warn
+
+      - name: Generate Thumbnail
+        run: |
+          # サムネイル生成（最初のフレーム）
+          npx remotion still src/index.ts Main output/thumbnail.png \
+            --frame=30 \
+            --log-level=warn
+
+      - name: Upload Preview Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-${{ github.event.pull_request.number }}
+          path: |
+            output/preview.mp4
+            output/thumbnail.png
+          retention-days: 7
+
+      - name: Comment Preview Link
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifactUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## 🎥 Video Preview Generated
+              
+              A preview of the first 5 seconds has been generated.
+              
+              **Download:** [GitHub Actions Run](${artifactUrl}) → Artifacts → \`preview-${context.issue.number}\`
+              
+              ---
+              *Preview generated automatically on PR update*`
+            });

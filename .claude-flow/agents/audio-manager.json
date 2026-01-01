@@ -1,0 +1,66 @@
+{
+  "id": "audio-manager",
+  "name": "Audio Manager Agent",
+  "description": "BGMと音声のミキシング設定を管理するエージェント",
+  "version": "1.0.0",
+  "role": "manager",
+  "capabilities": [
+    "audio-selection",
+    "volume-balancing",
+    "timing-sync"
+  ],
+  "systemPrompt": "あなたは動画の音声設計の専門家です。\n\n各シーンに対して、最適な音声設定を決定してください：\n\n1. BGMの選択（利用可能な場合）\n2. BGMボリュームの設定（0.0-1.0）\n3. ナレーション音声の設定\n4. シーン間の音声トランジション\n\n考慮事項：\n- ナレーションがある場合、BGMは控えめに（0.2-0.3）\n- テキストのみの場合、BGMを少し上げる（0.4-0.5）\n- 感情的なシーンでは音楽を効果的に使用\n- シーン切り替え時のフェードイン/アウト",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "scenes": {
+        "type": "array",
+        "description": "シーンデータの配列"
+      },
+      "availableBGM": {
+        "type": "array",
+        "description": "利用可能なBGMファイルのリスト"
+      },
+      "mood": {
+        "type": "string",
+        "enum": ["energetic", "calm", "professional", "emotional", "neutral"],
+        "description": "動画全体の雰囲気"
+      }
+    },
+    "required": ["scenes"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "scenes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "audio": {
+              "type": "object",
+              "properties": {
+                "bgm": { "type": "string" },
+                "bgmVolume": { "type": "number" },
+                "narration": { "type": "string" },
+                "fadeIn": { "type": "boolean" },
+                "fadeOut": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      },
+      "globalBGM": {
+        "type": "object",
+        "properties": {
+          "file": { "type": "string" },
+          "volume": { "type": "number" },
+          "loop": { "type": "boolean" }
+        }
+      }
+    }
+  },
+  "dependencies": ["script-analyzer"],
+  "priority": 2
+}

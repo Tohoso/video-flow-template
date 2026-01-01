@@ -1,0 +1,52 @@
+{
+  "name": "video-flow-template",
+  "version": "1.0.0",
+  "description": "AI-powered video generation template using Remotion and Claude Flow",
+  "scripts": {
+    "start": "npx remotion studio",
+    "build": "npx remotion bundle",
+    "render": "npx remotion render src/index.ts Main out/video.mp4",
+    "render:youtube": "npx remotion render src/index.ts YouTubeStyle out/youtube.mp4",
+    "render:short": "npx remotion render src/index.ts ShortStyle out/short.mp4",
+    "render:presentation": "npx remotion render src/index.ts PresentationStyle out/presentation.mp4",
+    "render:custom": "npx remotion render src/index.ts",
+    "upgrade": "npx remotion upgrade",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tohoso/video-flow-template.git"
+  },
+  "keywords": [
+    "remotion",
+    "video",
+    "ai",
+    "claude-flow",
+    "automation",
+    "youtube"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@remotion/bundler": "^4.0.0",
+    "@remotion/cli": "^4.0.0",
+    "@remotion/renderer": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remotion": "^4.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "prettier": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
