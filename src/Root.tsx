@@ -2,7 +2,7 @@ import { Composition, getInputProps } from "remotion";
 import { YouTubeStyle } from "./compositions/YouTubeStyle";
 import { ShortStyle } from "./compositions/ShortStyle";
 import { PresentationStyle } from "./compositions/PresentationStyle";
-import { ScriptSchema, type ScriptData } from "./utils/schema";
+import { ScriptSchema, type ScriptData, type ScriptProps } from "./utils/schema";
 
 // デフォルトのスクリプトデータ
 const defaultScript: ScriptData = {
@@ -28,10 +28,15 @@ const defaultScript: ScriptData = {
   ],
 };
 
+// デフォルトのprops（ScriptPropsの形式）
+const defaultProps: ScriptProps = {
+  script: defaultScript,
+};
+
 export const Root: React.FC = () => {
   // 入力propsから台本データを取得
-  const inputProps = getInputProps();
-  const script = inputProps?.script || defaultScript;
+  const inputProps = getInputProps() as Partial<ScriptProps>;
+  const script: ScriptData = inputProps?.script || defaultScript;
 
   // FPSとサイズの計算
   const fps = script.meta?.fps || 30;
@@ -40,10 +45,13 @@ export const Root: React.FC = () => {
 
   // 総フレーム数の計算
   const totalDuration = script.scenes?.reduce(
-    (acc: number, scene: { duration?: number }) => acc + (scene.duration || 5),
+    (acc, scene) => acc + (scene.duration || 5),
     0
   ) || 10;
   const durationInFrames = Math.ceil(totalDuration * fps);
+
+  // 現在のprops
+  const currentProps: ScriptProps = { script };
 
   return (
     <>
@@ -55,7 +63,7 @@ export const Root: React.FC = () => {
         fps={fps}
         width={1920}
         height={1080}
-        defaultProps={{ script }}
+        defaultProps={currentProps}
         schema={ScriptSchema}
       />
 
@@ -67,7 +75,7 @@ export const Root: React.FC = () => {
         fps={fps}
         width={1080}
         height={1920}
-        defaultProps={{ script }}
+        defaultProps={currentProps}
         schema={ScriptSchema}
       />
 
@@ -79,7 +87,7 @@ export const Root: React.FC = () => {
         fps={fps}
         width={1920}
         height={1080}
-        defaultProps={{ script }}
+        defaultProps={currentProps}
         schema={ScriptSchema}
       />
 
@@ -97,7 +105,7 @@ export const Root: React.FC = () => {
         fps={fps}
         width={script.meta?.template === "short" ? 1080 : width}
         height={script.meta?.template === "short" ? 1920 : height}
-        defaultProps={{ script }}
+        defaultProps={currentProps}
         schema={ScriptSchema}
       />
     </>

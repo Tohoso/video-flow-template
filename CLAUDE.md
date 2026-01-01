@@ -1,51 +1,120 @@
-# Claude Code Instructions
-
-このプロジェクトは、Remotionを使用したAI駆動の動画生成テンプレートです。
+# Video Flow Template - Claude Code 設定
 
 ## プロジェクト概要
 
-- **目的**: テキストから動画を自動生成
-- **技術スタック**: Remotion, React, TypeScript, Claude Flow
-- **出力形式**: MP4動画
+Remotionベースの動画自動生成ツール。Claude Codeに「YouTube風に編集して」と伝えるだけで、素材を確認し、動画を編集し、MP4として書き出すまでを自動で行う。
 
-## ディレクトリ構造
+## フォルダ構成
 
 ```
-src/
-├── components/    # 再利用可能なUIコンポーネント
-├── compositions/  # 動画テンプレート（YouTube風、ショート風、プレゼン風）
-└── utils/         # ユーティリティ関数
-
-scripts/
-├── schema.json    # スクリプトJSONスキーマ
-└── input/         # 入力スクリプトファイル
-
-.claude-flow/
-├── agents/        # Swarm Agent定義
-└── workflows/     # ワークフロー定義
+video-flow-template/
+├── public/
+│   ├── audio/      ← 音声データ（ナレーション、SE）
+│   ├── avatar/     ← 動画素材（アバター、実写映像）
+│   ├── bgm/        ← BGM音源
+│   └── images/     ← 画像・イラスト素材
+├── scripts/
+│   └── input/      ← スクリプトJSON（台本データ）
+├── src/
+│   ├── compositions/  ← 動画テンプレート
+│   ├── components/    ← UIコンポーネント
+│   └── utils/         ← ユーティリティ関数
+└── out/            ← 完成動画の出力先
 ```
 
-## 主要タスク
+## トリガーコマンド
 
-### 動画スクリプト生成
+以下のキーワードで動画生成を開始できる：
 
-ユーザーからテキストを受け取り、`scripts/schema.json`に準拠したJSONを生成してください。
+| コマンド | 動作 |
+|:---|:---|
+| `YouTube風に編集して` | 16:9のYouTube向け動画を生成 |
+| `ショート動画を作って` | 9:16の縦型ショート動画を生成 |
+| `プレゼン動画を作って` | 16:9のプレゼンテーション動画を生成 |
 
-出力先: `scripts/input/generated.json`
+## 動画生成フロー
 
-### コンポーネント修正
+1. **素材確認**: `public/` 内の素材を確認
+2. **スクリプト解析**: `scripts/input/` のJSONを読み込み
+3. **コンポジション生成**: 適切なテンプレートを選択・カスタマイズ
+4. **レンダリング**: `npx remotion render` で動画を生成
+5. **出力**: `out/` に完成動画を書き出し
 
-`src/components/`内のコンポーネントを修正する際は、以下を確認：
-- Remotion APIの正しい使用
-- TypeScript型の整合性
-- アニメーションのパフォーマンス
+## サブエージェント構成
 
-### テンプレート追加
+動画生成の精度を高めるため、以下の専門エージェントが連携して作業を行う：
 
-新しいテンプレートを追加する場合：
-1. `src/compositions/`に新ファイル作成
-2. `src/Root.tsx`でComposition登録
-3. `src/utils/colors.ts`にカラーパレット追加
+### 1. スクリプト分析エージェント
+- **役割**: 台本テキストを解析し、シーン構成を決定
+- **入力**: 台本テキスト、動画の目的
+- **出力**: シーン分割、各シーンの長さ、キーワード抽出
+- **コマンド**: `/script-analyze`
+
+### 2. テロップ生成エージェント
+- **役割**: テロップの内容、スタイル、タイミングを決定
+- **入力**: シーン情報、強調すべきキーワード
+- **出力**: テロップデータ（テキスト、開始/終了時間、スタイル）
+- **コマンド**: `/subtitle-generate`
+
+### 3. 映像配置エージェント
+- **役割**: アバター、画像、背景の配置を決定
+- **入力**: シーン情報、利用可能な素材リスト
+- **出力**: 各シーンの映像構成（素材、位置、アニメーション）
+- **コマンド**: `/visual-compose`
+
+### 4. 音声管理エージェント
+- **役割**: BGM、SE、ナレーションのミキシングを決定
+- **入力**: シーン情報、利用可能な音声素材
+- **出力**: 音声トラック構成（素材、音量、開始/終了時間）
+- **コマンド**: `/audio-manage`
+
+### 5. 最終統合エージェント
+- **役割**: 全エージェントの出力を統合し、最終的なスクリプトJSONを生成
+- **入力**: 各エージェントの出力
+- **出力**: `scripts/input/` に配置するJSON
+- **コマンド**: `/final-assemble`
+
+## エラー処理
+
+エラーが発生した場合は、以下の手順で自動修正を行う：
+
+1. エラーメッセージを確認
+2. 原因を特定（どのエージェントの出力に問題があるか）
+3. 該当エージェントの出力を修正
+4. 再度統合を実行
+5. エラーがなくなるまで繰り返す
+
+**重要**: エラー修正時にユーザーへの確認は不要。自動で修正を繰り返すこと。
+
+## 動画テンプレート
+
+### YouTubeStyle（16:9）
+- 解像度: 1920x1080
+- FPS: 30
+- テロップ位置: 画面下部中央
+- テーマテロップ: 左上
+- BGM音量: -20dB
+
+### ShortStyle（9:16）
+- 解像度: 1080x1920
+- FPS: 30
+- テロップ位置: 画面中央
+- 大きめのフォント
+- BGM音量: -15dB
+
+### PresentationStyle（16:9）
+- 解像度: 1920x1080
+- FPS: 30
+- テロップ位置: 画面下部
+- スライド風の背景
+- BGM音量: -25dB
+
+## 技術スタック
+
+- **Remotion**: 動画生成フレームワーク
+- **React**: UIコンポーネント
+- **TypeScript**: 型安全なコード
+- **Zod**: スキーマバリデーション
 
 ## コマンド
 
@@ -56,12 +125,45 @@ npm run dev
 # 動画レンダリング
 npm run render
 
-# 特定テンプレートでレンダリング
-npx remotion render src/index.ts YouTubeStyle output/video.mp4 --props="$(cat scripts/input/example.json)"
+# 特定のコンポジションをレンダリング
+npx remotion render src/index.ts YouTubeStyle out/youtube.mp4
+
+# プレビュー生成（最初の5秒）
+npx remotion render src/index.ts YouTubeStyle out/preview.mp4 --frames=0-150
+```
+
+## スクリプトJSON形式
+
+```json
+{
+  "title": "動画タイトル",
+  "style": "youtube",
+  "scenes": [
+    {
+      "id": "scene-1",
+      "duration": 5,
+      "text": "メインテキスト",
+      "subtitle": "テロップテキスト",
+      "background": {
+        "type": "gradient",
+        "colors": ["#1a1a2e", "#16213e"]
+      },
+      "audio": {
+        "bgm": "bgm/track1.mp3",
+        "volume": -20
+      }
+    }
+  ]
+}
 ```
 
 ## 注意事項
 
+- 素材は `public/` 以下に配置すること
+- 音声ファイルは MP3 または WAV 形式
+- 画像ファイルは PNG または JPG 形式
+- 動画ファイルは MP4 形式
+- レンダリング時間はPCスペックに依存（目安: 5秒動画で約20秒）
 - 動画レンダリングは重い処理のため、GitHub Actionsでは60分のタイムアウトを設定
 - 大きな画像/動画素材は`public/`に配置し、`staticFile()`で参照
 - フォントは`@remotion/google-fonts`を使用推奨

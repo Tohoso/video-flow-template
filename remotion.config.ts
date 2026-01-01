@@ -9,6 +9,3 @@ Config.setJpegQuality(80);
 
 // キャッシュ設定
 Config.setCachingEnabled(true);
-
-// ログレベル
-Config.setLogLevel("info");
