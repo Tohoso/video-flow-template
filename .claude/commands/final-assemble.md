@@ -8,19 +8,23 @@
 
 ## 入力
 
-- スクリプト分析結果: `scripts/input/analysis.json`
-- テロップデータ: `scripts/input/subtitles.json`
-- 映像配置データ: `scripts/input/visuals.json`
-- 音声データ: `scripts/input/audio.json`
+- スクリプト分析結果: `scripts/analysis.json`
+- カットタイミング: `scripts/cuts.json`
+- 音声データ: `scripts/audio.json`
+- テロップデータ: `scripts/subtitles.json`
+- 映像配置データ: `scripts/visuals.json`
+- BGMデータ: `scripts/bgm.json`
 
 ## 処理手順
 
 1. **入力ファイルの読み込み**
    ```bash
-   cat scripts/input/analysis.json
-   cat scripts/input/subtitles.json
-   cat scripts/input/visuals.json
-   cat scripts/input/audio.json
+   cat scripts/analysis.json
+   cat scripts/cuts.json
+   cat scripts/audio.json
+   cat scripts/subtitles.json
+   cat scripts/visuals.json
+   cat scripts/bgm.json
    ```
 
 2. **データの整合性チェック**
@@ -34,65 +38,62 @@
    - 最終的なスキーマに変換
 
 4. **バリデーション**
-   - `scripts/schema.json` に準拠しているか確認
    - 必須フィールドの存在確認
    - 型の整合性チェック
+   - 素材ファイルの存在確認
 
 ## 出力形式
 
 ```json
 {
-  "title": "動画タイトル",
-  "style": "youtube",
-  "fps": 30,
-  "totalDurationInFrames": 300,
+  "meta": {
+    "title": "動画タイトル",
+    "template": "youtube",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "totalDuration": 60
+  },
+  "audio": {
+    "narration": "audio/narration.mp3",
+    "bgm": "bgm/background.mp3",
+    "bgmVolume": 0.3
+  },
+  "avatar": {
+    "video": "avatar/presenter.mp4",
+    "position": "right",
+    "size": 0.3
+  },
   "scenes": [
     {
       "id": "scene-1",
-      "durationInFrames": 150,
-      "text": "メインテキスト",
+      "duration": 5,
+      "narration": "こんにちは",
       "subtitle": {
-        "text": "テロップテキスト",
+        "text": "こんにちは",
         "style": {
           "position": "bottom",
           "fontSize": 48,
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "backgroundColor": "rgba(0,0,0,0.7)"
         }
+      },
+      "visual": {
+        "type": "image",
+        "src": "images/slide1.png",
+        "position": { "x": "10%", "y": "10%" },
+        "size": { "width": "60%", "height": "auto" }
       },
       "background": {
         "type": "gradient",
         "colors": ["#1a1a2e", "#16213e"]
       },
-      "elements": [
-        {
-          "type": "image",
-          "source": "images/logo.png",
-          "position": { "x": "10%", "y": "10%" }
-        }
-      ],
-      "audio": {
-        "bgm": {
-          "source": "bgm/track1.mp3",
-          "volume": -20
-        },
-        "narration": {
-          "source": "audio/narration_01.mp3",
-          "volume": 0
-        }
-      },
       "transition": {
-        "in": "fade",
-        "out": "slide"
+        "type": "fade",
+        "duration": 0.5
       }
     }
-  ],
-  "globalAudio": {
-    "bgm": {
-      "source": "bgm/main.mp3",
-      "volume": -20,
-      "loop": true
-    }
-  }
+  ]
 }
 ```
 
@@ -102,12 +103,29 @@
 - [ ] 全シーンにIDが設定されている
 - [ ] シーンの合計時間が妥当（5秒〜10分）
 - [ ] 参照している素材ファイルが存在する
-- [ ] 音量設定が適切な範囲内（-60dB〜0dB）
+- [ ] 音量設定が適切な範囲内（0〜1）
 
 ### 推奨チェック
 - [ ] テロップの表示時間が読める長さ
 - [ ] トランジションが自然
 - [ ] 音声のタイミングが映像と同期
+- [ ] アバターとテロップが重ならない
+
+## 素材ファイルの確認
+
+```bash
+# 音声ファイル
+ls -la audio/
+
+# アバター動画
+ls -la avatar/
+
+# BGM
+ls -la bgm/
+
+# 画像
+ls -la images/
+```
 
 ## エラー処理
 
@@ -130,7 +148,7 @@
 
 最終的なJSONは以下に保存：
 ```
-scripts/input/final.json
+scripts/final.json
 ```
 
 ## レンダリング実行
@@ -139,13 +157,13 @@ scripts/input/final.json
 
 ```bash
 # YouTube風
-npx remotion render src/index.ts YouTubeStyle out/output.mp4 --props="$(cat scripts/input/final.json)"
+npx remotion render src/index.ts YouTubeStyle output/video.mp4 --props="$(cat scripts/final.json)"
 
 # ショート風
-npx remotion render src/index.ts ShortStyle out/output.mp4 --props="$(cat scripts/input/final.json)"
+npx remotion render src/index.ts ShortStyle output/video.mp4 --props="$(cat scripts/final.json)"
 
 # プレゼン風
-npx remotion render src/index.ts PresentationStyle out/output.mp4 --props="$(cat scripts/input/final.json)"
+npx remotion render src/index.ts PresentationStyle output/video.mp4 --props="$(cat scripts/final.json)"
 ```
 
 ## 実行

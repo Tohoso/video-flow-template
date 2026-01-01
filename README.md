@@ -1,94 +1,148 @@
 # Video Flow Template
 
-AI駆動の動画自動生成テンプレートリポジトリ。Claude FlowとRemotionを使用して、テキストから動画を自動生成します。
+Remotion + Claude Code による動画自動生成テンプレート
 
 ## 概要
 
-このテンプレートは、以下のワークフローを実現します：
+このテンプレートは、Claude Code（またはAntigravity）を使って、台本テキストから自動的に動画を生成するためのプロジェクトです。
 
-```
-テキスト入力 → Claude Flow Swarm → スクリプトJSON → Remotion → 動画出力
-```
+**参考**: [ふためん氏の動画編集AI自動化tips](https://tips.jp/share/preview/a/DcHmetX1zT1KThVs)
 
-### 特徴
+## 特徴
 
-- **AI駆動**: Claude Flow Swarmによる自動台本解析・構成
-- **複数テンプレート**: YouTube風、ショート動画風、プレゼンテーション風
-- **GitHub Actions統合**: Issue作成で自動動画生成
-- **カスタマイズ可能**: コンポーネントベースの設計
+- **1分で動画1本**: 素材を入れ替えるだけで量産可能
+- **サブエージェント**: 役割ごとに専門AIが分担
+- **トリガーキーワード**: 「YouTube風に編集して」で自動実行
 
-## クイックスタート
-
-### 1. テンプレートから新規リポジトリを作成
-
-「Use this template」ボタンをクリックして新規リポジトリを作成
-
-### 2. Secretsを設定
-
-Settings → Secrets and variables → Actions で以下を設定：
-
-| Secret名 | 説明 |
-|:---|:---|
-| `ANTHROPIC_API_KEY` | Anthropic APIキー |
-
-### 3. 動画を生成
-
-**方法A: Issue経由（自動）**
-
-1. Issues → New Issue → 「🎬 Video Request」を選択
-2. フォームに記入して作成
-3. `video-request`ラベルで自動生成開始
-4. 完了後、Artifactsから動画をダウンロード
-
-**方法B: 手動トリガー**
-
-1. Actions → 「Render Video (Manual)」を選択
-2. 「Run workflow」をクリック
-3. パラメータを入力して実行
-
-## プロジェクト構造
+## フォルダ構成
 
 ```
 video-flow-template/
-├── .github/
-│   ├── workflows/
-│   │   ├── auto-generate-video.yml  # Issue→動画自動生成
-│   │   ├── render-video.yml         # 手動レンダリング
-│   │   └── preview.yml              # PRプレビュー
-│   └── ISSUE_TEMPLATE/
-│       └── video-request.yml        # 動画リクエストフォーム
-├── .claude-flow/
-│   ├── config.json                  # Claude Flow設定
-│   ├── agents/                      # Swarm Agents定義
-│   │   ├── script-analyzer.json     # 台本分析
-│   │   ├── subtitle-generator.json  # テロップ生成
-│   │   ├── visual-composer.json     # 映像構成
-│   │   ├── audio-manager.json       # 音声管理
-│   │   └── final-assembler.json     # 最終統合
-│   └── workflows/
-│       └── video-generation.json    # 生成ワークフロー
-├── src/
-│   ├── index.ts                     # エントリーポイント
-│   ├── Root.tsx                     # Remotion Root
-│   ├── components/                  # 再利用可能コンポーネント
-│   │   ├── Subtitle.tsx
-│   │   ├── Background.tsx
-│   │   └── Transition.tsx
-│   ├── compositions/                # 動画テンプレート
-│   │   ├── YouTubeStyle.tsx
-│   │   ├── ShortStyle.tsx
-│   │   └── PresentationStyle.tsx
-│   └── utils/
-│       ├── schema.ts                # 型定義
-│       ├── timing.ts                # タイミング計算
-│       └── colors.ts                # カラーパレット
-├── scripts/
-│   ├── schema.json                  # スクリプトJSONスキーマ
-│   └── input/                       # 入力スクリプト
-│       └── example.json
-├── public/                          # 静的アセット
-└── output/                          # 出力ディレクトリ
+├── audio/              -- 音声データ（fishaudioで生成）
+├── avatar/             -- 動画素材（HEYGENで生成）
+├── bgm/                -- BGM
+├── images/             -- 画像・イラスト
+├── output/             -- 完成動画
+├── scripts/            -- スクリプトJSON
+│   └── input/          -- 入力用スクリプト
+├── src/                -- Remotionソースコード
+│   ├── compositions/   -- 動画テンプレート
+│   ├── components/     -- UIコンポーネント
+│   └── utils/          -- ユーティリティ
+├── .claude/            -- Claude Code設定
+│   └── commands/       -- サブエージェントコマンド
+├── CLAUDE.md           -- Claude Code用設定
+└── prompts/            -- プロンプトテンプレート
 ```
+
+## 使用するAIサービス
+
+| サービス | 用途 | 出力先 |
+|:---|:---|:---|
+| **fishaudio** | 合成音声（ナレーション） | `audio/` |
+| **HEYGEN** | AIアバター（人物映像） | `avatar/` |
+| **Remotion** | 動画編集・合成 | `output/` |
+
+## クイックスタート
+
+### 1. 素材を準備
+
+```bash
+# 音声（fishaudioで生成）
+audio/narration.mp3
+
+# アバター（HEYGENで生成）
+avatar/presenter.mp4
+
+# BGM
+bgm/background.mp3
+
+# 画像
+images/slide1.png
+images/slide2.png
+```
+
+### 2. Claude Codeを起動
+
+```bash
+claude
+```
+
+### 3. トリガーキーワードで動画生成
+
+```
+YouTube風に編集して
+
+タイトル: AIの基礎知識
+
+台本:
+こんにちは、今日はAIについて解説します。
+まず、AIとは人工知能のことです。
+最近では様々な分野で活用されています。
+```
+
+### 4. 完成動画を確認
+
+```bash
+ls output/
+# output.mp4
+```
+
+## トリガーキーワード
+
+| キーワード | 動作 |
+|:---|:---|
+| `YouTube風に編集して` | 横動画（16:9）を生成 |
+| `ショート動画を作って` | 縦動画（9:16）を生成 |
+| `プレゼン動画を作って` | プレゼン風動画を生成 |
+| `全部やっとけ` | 自動判定して生成 |
+
+## サブエージェント
+
+役割ごとに専門のAIが分担して作業します：
+
+| エージェント | 役割 |
+|:---|:---|
+| スクリプト分析 | 台本を読んで構成を決める |
+| カット担当 | カットのタイミングや間の取り方を決める |
+| 音声担当 | 音声ファイルの分析、タイミング調整 |
+| テロップ担当 | テロップの生成とタイミング調整 |
+| 映像担当 | アバターや画像の配置 |
+| BGM担当 | BGMの選定と音量調整 |
+
+## 開発
+
+### 依存関係のインストール
+
+```bash
+npm install
+```
+
+### プレビュー
+
+```bash
+npx remotion studio
+```
+
+### レンダリング
+
+```bash
+npx remotion render src/index.ts Main out/output.mp4
+```
+
+## 外部サービスの設定
+
+### fishaudio
+
+1. [fishaudio](https://fish.audio/)でアカウント作成
+2. APIキーを取得
+3. 環境変数に設定: `FISHAUDIO_API_KEY`
+
+### HEYGEN
+
+1. [HEYGEN](https://www.heygen.com/)でアカウント作成
+2. APIキーを取得
+3. 環境変数に設定: `HEYGEN_API_KEY`
 
 ## テンプレート
 
@@ -139,52 +193,6 @@ video-flow-template/
   ]
 }
 ```
-
-## ローカル開発
-
-```bash
-# 依存関係インストール
-npm install
-
-# プレビュー起動
-npm run dev
-
-# レンダリング
-npm run render
-
-# 特定のテンプレートでレンダリング
-npx remotion render src/index.ts YouTubeStyle output/video.mp4
-```
-
-## Swarm Agents
-
-### script-analyzer
-台本テキストを解析し、シーン構成を決定
-
-### subtitle-generator
-テロップのテキストとタイミングを生成
-
-### visual-composer
-映像素材の配置とアニメーションを決定
-
-### audio-manager
-BGMと音声のミキシング設定を管理
-
-### final-assembler
-全エージェントの出力を統合し、最終JSONを生成
-
-## カスタマイズ
-
-### 新しいテンプレートを追加
-
-1. `src/compositions/`に新しいコンポーネントを作成
-2. `src/Root.tsx`でCompositionを登録
-3. `src/utils/colors.ts`にカラーパレットを追加
-
-### 新しいAgentを追加
-
-1. `.claude-flow/agents/`にJSON定義を作成
-2. `.claude-flow/workflows/video-generation.json`にステージを追加
 
 ## ライセンス
 
