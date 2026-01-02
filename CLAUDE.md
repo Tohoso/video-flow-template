@@ -1,292 +1,125 @@
-# Video Flow Template - Claude Code 設定
+# Video Flow Template
 
-このプロジェクトは、Claude Codeを使って台本テキストから動画を自動生成するためのRemotionプロジェクトです。
+台本テキストから動画を自動生成するRemotionプロジェクト。
 
-**参考**: [ふためん氏の動画編集AI自動化tips](https://tips.jp/share/preview/a/DcHmetX1zT1KThVs)
+## あなたの役割
 
-## プロジェクト概要
+あなたは動画制作のAIアシスタントです。ユーザーから台本や動画生成の指示を受けたら、サブエージェントを活用して動画を自動生成します。
 
-- **目的**: 台本テキストから動画を自動生成
-- **技術スタック**: Remotion, TypeScript, React
-- **外部サービス**: fishaudio（音声合成）, HEYGEN（AIアバター）
+**基本方針:**
+- ユーザーへの確認は最小限に。自律的に判断して進める
+- エラーが発生しても自動で修正を試みる
+- 素材が不足している場合は、何が必要か明確に伝える
 
-## フォルダ構成
+## クイックスタート
+
+### 動画生成の開始
+
+以下のキーワードで動画生成を開始：
+
+| キーワード | 生成される動画 |
+|:---|:---|
+| 「YouTube風に編集して」 | 横動画（16:9, 1920x1080） |
+| 「ショート動画を作って」 | 縦動画（9:16, 1080x1920） |
+| 「プレゼン動画を作って」 | プレゼン風（16:9, 1920x1080） |
+| 「全部やっとけ」 | 自動判定 |
+
+### 必要な素材
+
+動画生成前に以下の素材を準備：
 
 ```
-audio/      -- 音声データ（fishaudioで生成したナレーション）
-avatar/     -- 動画素材（HEYGENで生成したAIアバター）
-bgm/        -- BGM
-images/     -- 画像・イラスト
-output/     -- 完成動画
-scripts/    -- スクリプトJSON
-src/        -- Remotionソースコード
+audio/      ← fishaudioで生成したナレーション音声
+avatar/     ← HEYGENで生成したAIアバター動画
+bgm/        ← BGM（著作権フリー）
+images/     ← 画像・イラスト素材
 ```
 
-## 環境変数の設定
+## サブエージェント
 
-プロジェクトを使用する前に、`.env.example` を `.env` にコピーして環境変数を設定してください。
+`.claude/agents/` に定義された専門エージェントを使用：
+
+| エージェント | 役割 | 出力 |
+|:---|:---|:---|
+| `script-analyze` | 台本を解析してシーン構成を決定 | `scripts/analysis.json` |
+| `cut-timing` | カットのタイミングを決定 | `scripts/cuts.json` |
+| `audio-manage` | 音声の配置とタイミング調整 | `scripts/audio.json` |
+| `subtitle-generate` | テロップの生成とスタイル決定 | `scripts/subtitles.json` |
+| `visual-compose` | アバターと画像の配置 | `scripts/visuals.json` |
+| `bgm-manage` | BGMの選定と音量調整 | `scripts/bgm.json` |
+| `final-assemble` | 全データを統合 | `scripts/final.json` |
+| `generate-video` | オーケストレーター | 動画生成全体を管理 |
+
+### 実行順序
+
+```
+1. generate-video（オーケストレーター）が起動
+   ↓
+2. script-analyze → 台本解析
+   ↓
+3. cut-timing → カットタイミング決定
+   ↓
+4. audio-manage → 音声配置
+   ↓
+5. subtitle-generate → テロップ生成
+   ↓
+6. visual-compose → 映像配置
+   ↓
+7. bgm-manage → BGM設定
+   ↓
+8. final-assemble → 統合
+   ↓
+9. Remotionでレンダリング → output/video.mp4
+```
+
+## 環境変数
+
+`.env.example` を `.env` にコピーして設定：
 
 ```bash
 cp .env.example .env
 ```
 
-### 必要な環境変数
-
-#### fishaudio（音声合成）
-
-| 変数名 | 必須 | 説明 |
-|:---|:---|:---|
-| `FISHAUDIO_API_KEY` | ✓ | APIキー（https://fish.audio/app/api-keys/ で取得） |
-| `FISHAUDIO_VOICE_ID` | ✓ | ボイスモデルID |
-| `FISHAUDIO_MODEL` | - | 使用モデル（デフォルト: s1） |
-
-#### HEYGEN（AIアバター）
-
-| 変数名 | 必須 | 説明 |
-|:---|:---|:---|
-| `HEYGEN_API_KEY` | ✓ | APIキー（HeyGen App → Space Settings → API tab） |
-| `HEYGEN_AVATAR_ID` | ✓ | アバターID |
-| `HEYGEN_VOICE_ID` | - | 音声ID（HEYGENの音声を使用する場合） |
-
-## トリガーキーワード
-
-以下のキーワードで動画生成を開始します：
-
-### 「YouTube風に編集して」
-
-横動画（16:9, 1920x1080）を生成します。
-素材を確認した後、動画編集を実行し、MP4で書き出します。
-
-### 「ショート動画を作って」
-
-縦動画（9:16, 1080x1920）を生成します。
-TikTok/YouTube Shorts向けの短尺動画を作成します。
-
-### 「プレゼン動画を作って」
-
-プレゼンテーション風の動画を生成します。
-スライド形式で整理された情報を表示します。
-
-### 「全部やっとけ」
-
-台本の内容から最適なテンプレートを自動判定して生成します。
-
-## サブエージェント
-
-動画編集の作業を分担するサブエージェントを使用します。
-各担当ごとに専門のエージェントが作業を行い、編集の精度を高めます。
-
-### スクリプト分析担当
-
-台本を読んで構成を決めます。
-- シーンの分割
-- 各シーンの長さ
-- 全体の流れ
-
-コマンド: `/script-analyze`
-
-### カット担当
-
-カットのタイミングや間の取り方を決めます。
-- シーン間のトランジション
-- テンポの調整
-- 間の演出
-
-コマンド: `/cut-timing`
-
-### 音声担当
-
-音声ファイルの分析、タイミング調整を行います。
-- fishaudioで生成した音声の配置
-- 音声の長さに合わせたシーン調整
-- 音量の正規化
-
-コマンド: `/audio-manage`
-
-### テロップ担当
-テロップの生成とタイミング調整を行います。
-- 字幕テキストの生成
-- 表示タイミングの計算
-- スタイルの決定
-
-コマンド: `/subtitle-generate`
-
-### 映像担当
-
-アバターや画像の配置を行います。
-- HEYGENで生成したアバターの配置
-- 画像素材の配置
-- アニメーション効果
-
-コマンド: `/visual-compose`
-
-### BGM担当
-
-BGMの選定と音量調整を行います。
-- BGMの選択
-- 音量バランスの調整
-- フェードイン/アウト
-
-コマンド: `/bgm-manage`
-
-## 動画生成の流れ
-
-1. **素材確認**: audio/, avatar/, bgm/, images/ の素材を確認
-2. **スクリプト分析**: 台本を解析してシーン構成を決定
-3. **各担当の処理**: サブエージェントが並列で処理
-4. **統合**: 全ての出力を統合してスクリプトJSONを生成
-5. **レンダリング**: Remotionで動画をレンダリング
-6. **出力**: output/ に完成動画を書き出し
-
-## 外部サービス連携
-
 ### fishaudio（音声合成）
 
-台本テキストからナレーション音声を生成します。
-
-**API情報:**
-
-| 項目 | 値 |
-|:---|:---|
-| エンドポイント | `https://api.fish.audio/v1/tts` |
-| 認証方式 | Bearer Token |
-| 出力先 | `audio/` |
-
-**使用例:**
-
-```bash
-curl --request POST \
-  --url https://api.fish.audio/v1/tts \
-  --header "Authorization: Bearer $FISHAUDIO_API_KEY" \
-  --header 'Content-Type: application/json' \
-  --header 'model: s1' \
-  --data "{
-    \"text\": \"こんにちは、今日はAIについて解説します。\",
-    \"reference_id\": \"$FISHAUDIO_VOICE_ID\",
-    \"format\": \"mp3\"
-  }" \
-  --output audio/narration.mp3
-```
-
-**ボイスIDの取得方法:**
-1. [fish.audio](https://fish.audio/) にアクセス
-2. 使用したいボイスを選択
-3. URLの `https://fish.audio/model/xxx-xxx-xxx` の `xxx-xxx-xxx` 部分がボイスID
+| 変数名 | 必須 | 説明 |
+|:---|:---|:---|
+| `FISHAUDIO_API_KEY` | ✓ | https://fish.audio/app/api-keys/ で取得 |
+| `FISHAUDIO_VOICE_ID` | ✓ | ボイスモデルID |
+| `FISHAUDIO_MODEL` | - | デフォルト: s1 |
 
 ### HEYGEN（AIアバター）
 
-AIアバターの動画を生成します。
-
-**API情報:**
-
-| 項目 | 値 |
-|:---|:---|
-| ベースURL | `https://api.heygen.com` |
-| 認証方式 | X-Api-Key ヘッダー |
-| 出力先 | `avatar/` |
-
-**使用例:**
-
-```bash
-# 動画生成リクエスト
-curl --request POST \
-  --url https://api.heygen.com/v2/video/generate \
-  --header 'accept: application/json' \
-  --header 'content-type: application/json' \
-  --header "x-api-key: $HEYGEN_API_KEY" \
-  --data "{
-    \"video_inputs\": [{
-      \"character\": {
-        \"type\": \"avatar\",
-        \"avatar_id\": \"$HEYGEN_AVATAR_ID\"
-      },
-      \"voice\": {
-        \"type\": \"text\",
-        \"voice_id\": \"$HEYGEN_VOICE_ID\",
-        \"input_text\": \"こんにちは、今日はAIについて解説します。\"
-      }
-    }],
-    \"dimension\": {
-      \"width\": 1920,
-      \"height\": 1080
-    }
-  }"
-
-# 生成状況の確認
-curl --request GET \
-  --url "https://api.heygen.com/v1/video_status.get?video_id=VIDEO_ID" \
-  --header 'accept: application/json' \
-  --header "x-api-key: $HEYGEN_API_KEY"
-```
-
-**アバターID/音声IDの取得方法:**
-
-```bash
-# アバター一覧を取得
-curl --request GET \
-  --url https://api.heygen.com/v2/avatars \
-  --header 'accept: application/json' \
-  --header "x-api-key: $HEYGEN_API_KEY"
-
-# 音声一覧を取得
-curl --request GET \
-  --url https://api.heygen.com/v2/voices \
-  --header 'accept: application/json' \
-  --header "x-api-key: $HEYGEN_API_KEY"
-```
+| 変数名 | 必須 | 説明 |
+|:---|:---|:---|
+| `HEYGEN_API_KEY` | ✓ | HeyGen App → Space Settings → API tab |
+| `HEYGEN_AVATAR_ID` | ✓ | アバターID |
+| `HEYGEN_VOICE_ID` | - | 音声ID |
 
 ## コマンド
 
-### プレビュー
-
 ```bash
+# プレビュー
 npx remotion studio
-```
 
-### レンダリング
-```bash
-npx remotion render src/index.ts Main output/video.mp4
-```
+# レンダリング
+npx remotion render src/index.ts YouTubeStyle output/video.mp4
 
-### 特定のテンプレートでレンダリング
-
-```bash
-# YouTube風
-npx remotion render src/index.ts YouTubeStyle output/youtube.mp4
-
-# ショート動画風
-npx remotion render src/index.ts ShortStyle output/short.mp4
-
-# プレゼン風
-npx remotion render src/index.ts PresentationStyle output/presentation.mp4
+# propsを指定してレンダリング
+npx remotion render src/index.ts YouTubeStyle output/video.mp4 --props="$(cat scripts/final.json)"
 ```
 
 ## 動画テンプレート
 
-### YouTubeStyle（16:9）
-- 解像度: 1920x1080
-- FPS: 30
-- テロップ位置: 画面下部中央
-- テーマテロップ: 左上
-- BGM音量: -20dB
-
-### ShortStyle（9:16）
-- 解像度: 1080x1920
-- FPS: 30
-- テロップ位置: 画面中央
-- 大きめのフォント
-- BGM音量: -15dB
-
-### PresentationStyle（16:9）
-- 解像度: 1920x1080
-- FPS: 30
-- テロップ位置: 画面下部
-- スライド風の背景
-- BGM音量: -25dB
+| テンプレート | 解像度 | 特徴 |
+|:---|:---|:---|
+| `YouTubeStyle` | 1920x1080 | 横動画、テロップ下部、BGM -20dB |
+| `ShortStyle` | 1080x1920 | 縦動画、テロップ中央、BGM -15dB |
+| `PresentationStyle` | 1920x1080 | スライド風、テロップ下部、BGM -25dB |
 
 ## スクリプトJSON形式
 
-動画生成に使用するJSONの形式：
+`scripts/final.json` の形式：
 
 ```json
 {
@@ -295,7 +128,8 @@ npx remotion render src/index.ts PresentationStyle output/presentation.mp4
     "template": "youtube",
     "fps": 30,
     "width": 1920,
-    "height": 1080
+    "height": 1080,
+    "totalDuration": 60
   },
   "audio": {
     "narration": "audio/narration.mp3",
@@ -304,7 +138,7 @@ npx remotion render src/index.ts PresentationStyle output/presentation.mp4
   },
   "avatar": {
     "video": "avatar/presenter.mp4",
-    "position": "left",
+    "position": "right",
     "size": 0.3
   },
   "scenes": [
@@ -312,24 +146,60 @@ npx remotion render src/index.ts PresentationStyle output/presentation.mp4
       "id": "scene-1",
       "duration": 5,
       "narration": "こんにちは",
-      "subtitle": "こんにちは",
+      "subtitle": {
+        "text": "こんにちは",
+        "style": { "position": "bottom", "fontSize": 48 }
+      },
       "visual": {
         "type": "image",
         "src": "images/slide1.png"
       },
-      "transition": {
-        "type": "fade",
-        "duration": 0.5
-      }
+      "transition": { "type": "fade", "duration": 0.5 }
     }
   ]
 }
 ```
 
+## 外部サービス連携
+
+### fishaudio API
+
+```bash
+curl --request POST \
+  --url https://api.fish.audio/v1/tts \
+  --header "Authorization: Bearer $FISHAUDIO_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "text": "こんにちは",
+    "reference_id": "VOICE_ID",
+    "format": "mp3"
+  }' \
+  --output audio/narration.mp3
+```
+
+### HEYGEN API
+
+```bash
+# 動画生成
+curl --request POST \
+  --url https://api.heygen.com/v2/video/generate \
+  --header "x-api-key: $HEYGEN_API_KEY" \
+  --header 'content-type: application/json' \
+  --data '{
+    "video_inputs": [{
+      "character": { "type": "avatar", "avatar_id": "AVATAR_ID" },
+      "voice": { "type": "text", "voice_id": "VOICE_ID", "input_text": "こんにちは" }
+    }],
+    "dimension": { "width": 1920, "height": 1080 }
+  }'
+
+# アバター一覧取得
+curl --url https://api.heygen.com/v2/avatars --header "x-api-key: $HEYGEN_API_KEY"
+```
+
 ## 修正の伝え方
 
-
-動画の調整は日本語で伝えてください：
+日本語で自然に伝えてください：
 
 - 「テロップの文字をもっと大きくして」
 - 「アバターの位置を左下に変えて」
@@ -338,22 +208,45 @@ npx remotion render src/index.ts PresentationStyle output/presentation.mp4
 
 ## エラー処理
 
-エラーが発生した場合は、以下の手順で自動修正を行う：
+エラーが発生した場合は自動で修正を試みます：
 
 1. エラーメッセージを確認
 2. 原因を特定（どのエージェントの出力に問題があるか）
 3. 該当エージェントの出力を修正
 4. 再度統合を実行
-5. エラーがなくなるまで繰り返す
+5. 成功するまで繰り返す
 
 **重要**: エラー修正時にユーザーへの確認は不要。自動で修正を繰り返すこと。
 
-## 注意事項
+## フォルダ構成
 
-- 素材は事前に audio/, avatar/, bgm/, images/ に配置してください
-- `.env` ファイルに API キーを設定してください（`.env.example` を参照）
-- レンダリング時間はPCスペックに依存します（目安: 5秒動画で約20秒）
-- 出力動画は output/ ディレクトリに保存されます
-- 音声ファイルは MP3 または WAV 形式
-- 画像ファイルは PNG または JPG 形式
-- 動画ファイルは MP4 形式
+```
+video-flow-template/
+├── .claude/
+│   └── agents/          ← サブエージェント定義
+├── audio/               ← ナレーション音声
+├── avatar/              ← AIアバター動画
+├── bgm/                 ← BGM
+├── images/              ← 画像素材
+├── output/              ← 完成動画
+├── scripts/             ← スクリプトJSON
+│   ├── input/           ← 入力台本
+│   ├── analysis.json    ← スクリプト分析結果
+│   ├── cuts.json        ← カットタイミング
+│   ├── audio.json       ← 音声配置
+│   ├── subtitles.json   ← テロップデータ
+│   ├── visuals.json     ← 映像配置
+│   ├── bgm.json         ← BGM設定
+│   └── final.json       ← 統合済みスクリプト
+├── src/                 ← Remotionソースコード
+├── .env.example         ← 環境変数テンプレート
+├── CLAUDE.md            ← このファイル
+└── README.md            ← プロジェクト説明
+```
+
+## 参考
+
+- [ふためん氏の動画編集AI自動化tips](https://tips.jp/share/preview/a/DcHmetX1zT1KThVs)
+- [Remotion公式ドキュメント](https://www.remotion.dev/docs/)
+- [fishaudio API](https://docs.fish.audio/)
+- [HEYGEN API](https://docs.heygen.com/)
