@@ -20,8 +20,12 @@ export const ShortStyle: React.FC<ScriptProps> = ({ script }) => {
 
   return (
     <AbsoluteFill>
-      {/* 背景 */}
-      <ShortBackground />
+      {/* 黒背景 */}
+      <AbsoluteFill
+        style={{
+          backgroundColor: "#000000",
+        }}
+      />
 
       {/* メインコンテンツエリア（縦長） */}
       <AbsoluteFill
@@ -74,13 +78,13 @@ export const ShortStyle: React.FC<ScriptProps> = ({ script }) => {
         </SceneTransition>
       </AbsoluteFill>
 
-      {/* テロップ（ショート動画スタイル） */}
+      {/* テロップ（画像解析に基づく正確なスタイル） */}
       {currentScene.subtitle && (
         <Subtitle
           text={currentScene.subtitle}
           style="short"
-          position="center"
-          fontSize={42}
+          position="bottom"
+          fontSize={55}
           startFrame={sceneStartFrame}
           endFrame={sceneStartFrame + sceneDuration}
         />
@@ -93,7 +97,7 @@ export const ShortStyle: React.FC<ScriptProps> = ({ script }) => {
           bottom: 0,
           left: 0,
           width: "100%",
-          height: 4,
+          height: 6,
           backgroundColor: "rgba(255, 255, 255, 0.2)",
         }}
       >
@@ -101,7 +105,7 @@ export const ShortStyle: React.FC<ScriptProps> = ({ script }) => {
           style={{
             width: `${sceneProgress * 100}%`,
             height: "100%",
-            backgroundColor: "#FE2C55",
+            background: "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
             transition: "width 0.1s linear",
           }}
         />
@@ -117,6 +121,37 @@ export const ShortStyle: React.FC<ScriptProps> = ({ script }) => {
           startFrom={sceneStartFrame}
         />
       )}
+
+      {/* ナレーション音声（全シーン通して再生） */}
+      <Audio
+        src={staticFile("audio/demo_narration.mp3")}
+        volume={1}
+      />
+
+      {/* アバター動画（中央に配置 - 画像解析に基づく正確な配置） */}
+      <div
+        style={{
+          position: "absolute",
+          top: "17.5%",
+          left: "0%",
+          width: "100%",
+          height: "60%",
+          zIndex: 1,
+        }}
+      >
+        <video
+          src={staticFile("avatar/heygen_avatar.mp4")}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+          muted
+          playsInline
+          autoPlay
+          loop
+        />
+      </div>
     </AbsoluteFill>
   );
 };

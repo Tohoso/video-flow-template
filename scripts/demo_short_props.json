@@ -1,0 +1,63 @@
+{
+  "script": {
+    "meta": {
+      "title": "AI動画自動生成デモ - ショート版",
+      "template": "short",
+      "fps": 30,
+      "width": 1080,
+      "height": 1920
+    },
+    "scenes": [
+      {
+        "id": "scene-1",
+        "duration": 1.1,
+        "subtitle": "AI動画自動生成の"
+      },
+      {
+        "id": "scene-2",
+        "duration": 1.4,
+        "subtitle": "時代がやってきました"
+      },
+      {
+        "id": "scene-3",
+        "duration": 1.0,
+        "subtitle": "台本を書くだけで"
+      },
+      {
+        "id": "scene-4",
+        "duration": 0.7,
+        "subtitle": "音声合成"
+      },
+      {
+        "id": "scene-5",
+        "duration": 0.8,
+        "subtitle": "アバター生成"
+      },
+      {
+        "id": "scene-6",
+        "duration": 0.9,
+        "subtitle": "テロップ配置まで"
+      },
+      {
+        "id": "scene-7",
+        "duration": 0.7,
+        "subtitle": "全部自動"
+      },
+      {
+        "id": "scene-8",
+        "duration": 2.8,
+        "subtitle": "もう編集ソフトと\n格闘する必要はありません"
+      },
+      {
+        "id": "scene-9",
+        "duration": 1.3,
+        "subtitle": "これからはAIが"
+      },
+      {
+        "id": "scene-10",
+        "duration": 2.2,
+        "subtitle": "あなたの動画制作を\nサポートします"
+      }
+    ]
+  }
+}
