@@ -1,6 +1,6 @@
 ---
 name: generate-video
-description: 動画自動生成のオーケストレーター。「YouTube風に編集して」「ショート動画を作って」「動画を生成して」「全部やっとけ」などのキーワードで起動。MUST BE USED when user requests video generation.
+description: 動画自動生成のオーケストレーター。「YouTube風に編集して」「ショート動画を作って」「トークリール風に編集して」「動画を生成して」「全部やっとけ」などのキーワードで起動。MUST BE USED when user requests video generation.
 tools: Read, Write, Bash, Glob, Agent
 model: inherit
 ---
@@ -13,6 +13,7 @@ model: inherit
 - `YouTube風に編集して`
 - `ショート動画を作って`
 - `プレゼン動画を作って`
+- `トークリール風に編集して`
 - `動画を生成して`
 - `全部やっとけ`
 
@@ -50,7 +51,7 @@ ls -la scripts/ 2>/dev/null || echo "スクリプトなし"
 
 ```bash
 # スタイルに応じたコンポジションを選択
-STYLE="YouTubeStyle"  # または ShortStyle, PresentationStyle
+STYLE="YouTubeStyle"  # または ShortStyle, PresentationStyle, TalkReelStyle
 
 # レンダリング実行
 npx remotion render src/index.ts $STYLE output/video.mp4 \
@@ -73,11 +74,31 @@ npx remotion render src/index.ts $STYLE output/video.mp4 \
 
 ## スタイル判定
 
-| キーワード | スタイル | 解像度 |
-|:---|:---|:---|
-| YouTube、横動画 | YouTubeStyle | 1920x1080 |
-| ショート、縦動画、TikTok、Reels | ShortStyle | 1080x1920 |
-| プレゼン、スライド、発表 | PresentationStyle | 1920x1080 |
+| キーワード | スタイル | 解像度 | 特徴 |
+|:---|:---|:---|:---|
+| YouTube、横動画 | YouTubeStyle | 1920x1080 | 標準的なYouTube動画 |
+| ショート、縦動画、TikTok、Reels | ShortStyle | 1080x1920 | 縦型ショート動画 |
+| プレゼン、スライド、発表 | PresentationStyle | 1920x1080 | スライド風 |
+| トークリール、リール、インスタ | TalkReelStyle | 1080x1920 | 話者中心＋強調テロップ |
+
+## トークリールスタイルの特徴
+
+トークリール（TalkReelStyle）は以下の特徴を持つ：
+
+1. **話者中心のレイアウト**: アバター動画が全画面で表示
+2. **強調テロップ**: `{キーワード}` で囲んだ部分が黄色で強調表示
+3. **自動字幕**: 画面上部に半透明の字幕ボックス
+4. **シーン切り替え**: 短い暗転（0.2秒）でテンポよく切り替え
+5. **グラデーションオーバーレイ**: 上下に暗くしてテロップの視認性向上
+
+### テロップの強調記法
+
+```json
+{
+  "subtitle": "本当は{言いたくない}んだけど"
+}
+```
+→ 「言いたくない」が黄色で強調表示される
 
 ## エラー処理
 

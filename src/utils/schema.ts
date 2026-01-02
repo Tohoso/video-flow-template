@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // シーンのビジュアル設定スキーマ
 const VisualSchema = z.object({
-  type: z.enum(["image", "video", "avatar", "text"]),
+  type: z.enum(["image", "video", "avatar", "text", "highlight"]),
   src: z.string().optional(),
   content: z.string().optional(),
   position: z.enum(["center", "left", "right", "fullscreen", "top", "bottom"]).default("center"),
@@ -28,10 +28,15 @@ const SceneSchema = z.object({
 // メタデータスキーマ
 const MetaSchema = z.object({
   title: z.string().default("Untitled Video"),
-  template: z.enum(["youtube", "short", "presentation"]).default("youtube"),
+  template: z.enum(["youtube", "short", "presentation", "talkreel"]).default("youtube"),
   fps: z.number().min(1).max(120).default(30),
   width: z.number().min(100).max(7680).default(1920),
   height: z.number().min(100).max(4320).default(1080),
+  // トークリール用の追加フィールド
+  avatarVideo: z.string().optional(), // アバター動画のパス
+  narration: z.string().optional(),   // ナレーション音声のパス
+  bgm: z.string().optional(),         // BGMのパス
+  bgmVolume: z.number().min(0).max(1).default(0.15).optional(),
 });
 
 // 台本全体のスキーマ

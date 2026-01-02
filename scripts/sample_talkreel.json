@@ -1,0 +1,56 @@
+{
+  "script": {
+    "meta": {
+      "title": "伸びるリールの共通点",
+      "template": "talkreel",
+      "fps": 30,
+      "width": 1080,
+      "height": 1920,
+      "avatarVideo": "avatar/presenter.mp4",
+      "narration": "audio/narration.mp3",
+      "bgm": "bgm/background.mp3",
+      "bgmVolume": 0.15
+    },
+    "scenes": [
+      {
+        "id": "scene-1",
+        "duration": 3,
+        "narration": "本当は言いたくないんだけど",
+        "subtitle": "本当は{言いたくない}んだけど"
+      },
+      {
+        "id": "scene-2",
+        "duration": 4,
+        "narration": "伸びるリールの共通点を教えます",
+        "subtitle": "{伸びるリール}の共通点"
+      },
+      {
+        "id": "scene-3",
+        "duration": 5,
+        "narration": "4000人の女性と話してわかったこと",
+        "subtitle": "{4000人}の女性と話してわかったこと"
+      },
+      {
+        "id": "scene-4",
+        "duration": 4,
+        "narration": "それは最初の3秒が全て",
+        "subtitle": "最初の{3秒}が全て",
+        "visual": {
+          "type": "highlight"
+        }
+      },
+      {
+        "id": "scene-5",
+        "duration": 5,
+        "narration": "視聴者の心をつかむフックを入れること",
+        "subtitle": "{フック}を入れること"
+      },
+      {
+        "id": "scene-6",
+        "duration": 4,
+        "narration": "詳しくはプロフィールのリンクから",
+        "subtitle": "詳しくは{プロフィール}から"
+      }
+    ]
+  }
+}

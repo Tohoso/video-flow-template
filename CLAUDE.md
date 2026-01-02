@@ -22,6 +22,7 @@
 | 「YouTube風に編集して」 | 横動画（16:9, 1920x1080） |
 | 「ショート動画を作って」 | 縦動画（9:16, 1080x1920） |
 | 「プレゼン動画を作って」 | プレゼン風（16:9, 1920x1080） |
+| 「トークリール風に編集して」 | トークリール（9:16, 1080x1920） |
 | 「全部やっとけ」 | 自動判定 |
 
 ### 必要な素材
@@ -72,6 +73,63 @@ images/     ← 画像・イラスト素材
 9. Remotionでレンダリング → output/video.mp4
 ```
 
+## 動画テンプレート
+
+| テンプレート | 解像度 | 特徴 |
+|:---|:---|:---|
+| `YouTubeStyle` | 1920x1080 | 横動画、テロップ下部、BGM -20dB |
+| `ShortStyle` | 1080x1920 | 縦動画、テロップ中央、BGM -15dB |
+| `PresentationStyle` | 1920x1080 | スライド風、テロップ下部、BGM -25dB |
+| `TalkReelStyle` | 1080x1920 | 話者中心＋強調テロップ、BGM -16dB |
+| `TalkReelWithCutins` | 1080x1920 | トークリール＋カットイン映像 |
+
+## トークリールスタイル
+
+インスタグラムのリールやTikTokで人気の「話者が中心で、強調テロップがポップアップする」スタイル。
+
+### 特徴
+
+1. **話者中心のレイアウト**: アバター動画が全画面で表示
+2. **強調テロップ**: `{キーワード}` で囲んだ部分が黄色で強調表示
+3. **自動字幕**: 画面上部に半透明の字幕ボックス
+4. **シーン切り替え**: 短い暗転（0.2秒）でテンポよく切り替え
+5. **グラデーションオーバーレイ**: 上下に暗くしてテロップの視認性向上
+
+### テロップの強調記法
+
+```json
+{
+  "subtitle": "本当は{言いたくない}んだけど"
+}
+```
+→ 「言いたくない」が黄色で強調表示される
+
+### サンプルスクリプト
+
+`scripts/sample_talkreel.json` を参照：
+
+```json
+{
+  "script": {
+    "meta": {
+      "title": "伸びるリールの共通点",
+      "template": "talkreel",
+      "avatarVideo": "avatar/presenter.mp4",
+      "narration": "audio/narration.mp3",
+      "bgm": "bgm/background.mp3"
+    },
+    "scenes": [
+      {
+        "id": "scene-1",
+        "duration": 3,
+        "narration": "本当は言いたくないんだけど",
+        "subtitle": "本当は{言いたくない}んだけど"
+      }
+    ]
+  }
+}
+```
+
 ## 環境変数
 
 `.env.example` を `.env` にコピーして設定：
@@ -104,60 +162,10 @@ npx remotion studio
 
 # レンダリング
 npx remotion render src/index.ts YouTubeStyle output/video.mp4
+npx remotion render src/index.ts TalkReelStyle output/video.mp4
 
 # propsを指定してレンダリング
-npx remotion render src/index.ts YouTubeStyle output/video.mp4 --props="$(cat scripts/final.json)"
-```
-
-## 動画テンプレート
-
-| テンプレート | 解像度 | 特徴 |
-|:---|:---|:---|
-| `YouTubeStyle` | 1920x1080 | 横動画、テロップ下部、BGM -20dB |
-| `ShortStyle` | 1080x1920 | 縦動画、テロップ中央、BGM -15dB |
-| `PresentationStyle` | 1920x1080 | スライド風、テロップ下部、BGM -25dB |
-
-## スクリプトJSON形式
-
-`scripts/final.json` の形式：
-
-```json
-{
-  "meta": {
-    "title": "動画タイトル",
-    "template": "youtube",
-    "fps": 30,
-    "width": 1920,
-    "height": 1080,
-    "totalDuration": 60
-  },
-  "audio": {
-    "narration": "audio/narration.mp3",
-    "bgm": "bgm/background.mp3",
-    "bgmVolume": 0.3
-  },
-  "avatar": {
-    "video": "avatar/presenter.mp4",
-    "position": "right",
-    "size": 0.3
-  },
-  "scenes": [
-    {
-      "id": "scene-1",
-      "duration": 5,
-      "narration": "こんにちは",
-      "subtitle": {
-        "text": "こんにちは",
-        "style": { "position": "bottom", "fontSize": 48 }
-      },
-      "visual": {
-        "type": "image",
-        "src": "images/slide1.png"
-      },
-      "transition": { "type": "fade", "duration": 0.5 }
-    }
-  ]
-}
+npx remotion render src/index.ts TalkReelStyle output/video.mp4 --props="$(cat scripts/sample_talkreel.json)"
 ```
 
 ## 外部サービス連携
@@ -190,7 +198,7 @@ curl --request POST \
       "character": { "type": "avatar", "avatar_id": "AVATAR_ID" },
       "voice": { "type": "text", "voice_id": "VOICE_ID", "input_text": "こんにちは" }
     }],
-    "dimension": { "width": 1920, "height": 1080 }
+    "dimension": { "width": 1080, "height": 1920 }
   }'
 
 # アバター一覧取得
@@ -205,6 +213,7 @@ curl --url https://api.heygen.com/v2/avatars --header "x-api-key: $HEYGEN_API_KE
 - 「アバターの位置を左下に変えて」
 - 「BGMの音量をもう少し下げて」
 - 「シーン2の長さを3秒にして」
+- 「強調の色を赤に変えて」
 
 ## エラー処理
 
@@ -231,6 +240,7 @@ video-flow-template/
 ├── output/              ← 完成動画
 ├── scripts/             ← スクリプトJSON
 │   ├── input/           ← 入力台本
+│   ├── sample_talkreel.json ← トークリールサンプル
 │   ├── analysis.json    ← スクリプト分析結果
 │   ├── cuts.json        ← カットタイミング
 │   ├── audio.json       ← 音声配置
@@ -239,6 +249,15 @@ video-flow-template/
 │   ├── bgm.json         ← BGM設定
 │   └── final.json       ← 統合済みスクリプト
 ├── src/                 ← Remotionソースコード
+│   ├── components/      ← 共通コンポーネント
+│   │   ├── PopupTelop.tsx    ← ポップアップテロップ
+│   │   ├── SceneEffects.tsx  ← シーン効果
+│   │   ├── Subtitle.tsx      ← 字幕
+│   │   └── ...
+│   └── compositions/    ← 動画テンプレート
+│       ├── TalkReelStyle.tsx ← トークリール
+│       ├── YouTubeStyle.tsx
+│       └── ...
 ├── .env.example         ← 環境変数テンプレート
 ├── CLAUDE.md            ← このファイル
 └── README.md            ← プロジェクト説明

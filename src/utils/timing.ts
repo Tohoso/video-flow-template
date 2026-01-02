@@ -81,6 +81,13 @@ export function easeOut(t: number): number {
 /**
  * フェードイン/アウトの不透明度を計算
  */
+/**
+ * 全シーンの合計フレーム数を計算
+ */
+export function getTotalDurationInFrames(scenes: Scene[], fps: number): number {
+  return scenes.reduce((total, scene) => total + getSceneDurationInFrames(scene, fps), 0);
+}
+
 export function getFadeOpacity(
   progress: number,
   fadeInDuration: number = 0.1,

@@ -2,6 +2,7 @@ import { Composition, getInputProps } from "remotion";
 import { YouTubeStyle } from "./compositions/YouTubeStyle";
 import { ShortStyle } from "./compositions/ShortStyle";
 import { PresentationStyle } from "./compositions/PresentationStyle";
+import { TalkReelStyle, TalkReelWithCutins } from "./compositions/TalkReelStyle";
 import { ScriptSchema, type ScriptData, type ScriptProps } from "./utils/schema";
 
 // デフォルトのスクリプトデータ
@@ -28,9 +29,42 @@ const defaultScript: ScriptData = {
   ],
 };
 
+// トークリール用のデフォルトスクリプト
+const defaultTalkReelScript: ScriptData = {
+  meta: {
+    title: "トークリール",
+    template: "talkreel",
+    fps: 30,
+    width: 1080,
+    height: 1920,
+    avatarVideo: "avatar/presenter.mp4",
+    narration: "audio/narration.mp3",
+    bgm: "bgm/background.mp3",
+    bgmVolume: 0.15,
+  },
+  scenes: [
+    {
+      id: "scene-1",
+      duration: 3,
+      narration: "本当は言いたくないんだけど",
+      subtitle: "本当は{言いたくない}んだけど",
+    },
+    {
+      id: "scene-2",
+      duration: 4,
+      narration: "伸びるリールの共通点を教えます",
+      subtitle: "{伸びるリール}の共通点",
+    },
+  ],
+};
+
 // デフォルトのprops（ScriptPropsの形式）
 const defaultProps: ScriptProps = {
   script: defaultScript,
+};
+
+const defaultTalkReelProps: ScriptProps = {
+  script: defaultTalkReelScript,
 };
 
 export const Root: React.FC = () => {
@@ -91,6 +125,30 @@ export const Root: React.FC = () => {
         schema={ScriptSchema}
       />
 
+      {/* トークリール風テンプレート (9:16) */}
+      <Composition
+        id="TalkReelStyle"
+        component={TalkReelStyle}
+        durationInFrames={durationInFrames}
+        fps={fps}
+        width={1080}
+        height={1920}
+        defaultProps={currentProps}
+        schema={ScriptSchema}
+      />
+
+      {/* トークリール（カットイン付き）テンプレート (9:16) */}
+      <Composition
+        id="TalkReelWithCutins"
+        component={TalkReelWithCutins}
+        durationInFrames={durationInFrames}
+        fps={fps}
+        width={1080}
+        height={1920}
+        defaultProps={currentProps}
+        schema={ScriptSchema}
+      />
+
       {/* メインコンポジション（動的テンプレート選択） */}
       <Composition
         id="Main"
@@ -99,12 +157,14 @@ export const Root: React.FC = () => {
             ? ShortStyle
             : script.meta?.template === "presentation"
             ? PresentationStyle
+            : script.meta?.template === "talkreel"
+            ? TalkReelStyle
             : YouTubeStyle
         }
         durationInFrames={durationInFrames}
         fps={fps}
-        width={script.meta?.template === "short" ? 1080 : width}
-        height={script.meta?.template === "short" ? 1920 : height}
+        width={script.meta?.template === "short" || script.meta?.template === "talkreel" ? 1080 : width}
+        height={script.meta?.template === "short" || script.meta?.template === "talkreel" ? 1920 : height}
         defaultProps={currentProps}
         schema={ScriptSchema}
       />
